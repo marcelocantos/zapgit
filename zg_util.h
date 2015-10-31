@@ -1,6 +1,7 @@
 #include <git2.h>
 
 #include <functional>
+#include <iostream>
 #include <stdexcept>
 #include <string>
 #include <type_traits>
@@ -125,4 +126,10 @@ auto wrap(F f, Args &&... args) {
     CHECK_GIT2(f(&outp, std::forward<Args>(args)...));
     return std::unique_ptr<Out, void (*)(OutP)>{
         outp, git_free_func<Out>::func()};
+}
+
+
+inline
+std::ostream & operator<<(std::ostream & os, git_oid const * oid) {
+    return os << git_oid_tostr_s(oid);
 }
