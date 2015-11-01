@@ -1,0 +1,3 @@
+[submodule "libgit2pp"]
+	path = libgit2pp
+	url = git@github.com:marcelocantos/libgit2pp.git

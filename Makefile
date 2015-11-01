@@ -3,5 +3,5 @@ LDFLAGS = -lgit2
 
 all : zapgit
 
-zapgit : zapgit.cc git2pp.h
+zapgit : zapgit.cc libgit2pp/git2pp.h
 	$(LINK.cc) $< $(LOADLIBES) $(LDLIBS) -o $@

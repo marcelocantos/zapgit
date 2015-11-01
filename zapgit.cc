@@ -1,4 +1,4 @@
-#include "git2pp.h"
+#include "libgit2pp/git2pp.h"
 
 #include <iostream>
 
@@ -25,9 +25,6 @@ bool git2ok(int rc) {
     const git_error *e = giterr_last();
     fprintf(stderr, "Error %d/%d: %s\n", rc, e->klass, e->message);
     return false;
-}
-
-void show_commit_after(char const * branch) {
 }
 
 
