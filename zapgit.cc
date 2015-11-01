@@ -1,6 +1,15 @@
-#include "zg_util.h"
+#include "git2pp.h"
 
 #include <iostream>
+
+
+void prologue() {
+    std::cerr << "zapgit 0.1";
+
+    int major, minor, rev;
+    git_libgit2_version(&major, &minor, &rev);
+    std::cerr << " (libgit2 " << major << "." << minor << "." << rev << ")\n";
+}
 
 
 int usage() {
@@ -9,34 +18,40 @@ int usage() {
 }
 
 
+bool git2ok(int rc) {
+    if (rc >= 0) {
+        return true;
+    }
+    const git_error *e = giterr_last();
+    fprintf(stderr, "Error %d/%d: %s\n", rc, e->klass, e->message);
+    return false;
+}
+
+void show_commit_after(char const * branch) {
+}
+
+
 int main(int argc, char * argv[]) try {
+    prologue();
 
     if (argc < 2) {
         return usage();
     }
 
-    git_libgit2_init();
-    auto shutdown = onDescoped(git_libgit2_shutdown);
+    git2pp::Session git2;
 
-    std::cerr << "zapgit 0.1";
-
-    {
-        int major, minor, rev;
-        git_libgit2_version(&major, &minor, &rev);
-        std::cerr << " (libgit2 " << major << "." << minor << "." << rev << ")\n";
-    }
-
-    auto repo = wrap(git_repository_open, ".");
-    auto master = wrap(git_reference_dwim, &*repo, "master");
-    auto object = wrap(git_reference_peel, &*master, GIT_OBJ_COMMIT);
-    auto oid = git_object_id(&*object);
-    std::cout << "master = " << oid << "\n";
-
-    auto commit = wrap(git_commit_lookup, &*repo, oid);
-    std::cout << "author = " << git_commit_author(&*commit)->name << "\n";
-    std::cout << "message = " << git_commit_message(&*commit) << "\n";
-
+    auto repo = git2[git_repository_open](".");
+    auto master = repo[git_reference_dwim]("master");
+    auto commit = master[git_reference_peel](GIT_OBJ_COMMIT).as<git_commit>();
+    auto dup = commit;
+    dup = commit;
+    std::cout << "master = " << commit[git_commit_id]() << "\n";
+    std::cout << "author = " << commit[git_commit_author]()->name << "\n";
+    std::cout << "message = " << commit[git_commit_message]() << "\n";
 } catch (std::exception const & ex) {
-    std::cerr << "error: " << ex.what() << "\n";
+    std::cerr << ex.what() << "\n";
+    return 1;
+} catch (...) {
+    std::cerr << "unknown exception\n";
     return 1;
 }
